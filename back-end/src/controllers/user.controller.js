@@ -60,3 +60,60 @@ exports.createUser = (req, res) => {
         }
     );
 };
+
+exports.getUserById = (req, res) => {
+    console.log('user.controller::getUserById called');
+    User.findUserById(
+        req.params.userId,
+        (user, err) => {
+            if (err) {
+                res.sendStatus(500);
+            }
+            userResponseObj = {
+                username: user.username,
+                email: user.email
+            }
+            res.send(userResponseObj);
+        }
+    );
+}
+
+exports.update = (req, res) => {
+    console.log('user.controller::update called');
+    let userId = req.body.userId; // TODO: handle error case where userId is not included in HTTP request body.
+    let username = req.body.username;
+    let email = req.body.email;
+    let password = req.body.password
+    User.update(userId, username, email, password,
+        (db_result) => res.send(
+            {
+                success: true,
+                error: null
+            }
+        ),
+        (db_error) => res.send(
+            {
+                success: false,
+                error: db_error
+            }
+        )
+    );
+};
+
+exports.delete = (req, res) => {
+    console.log('user.controller::delete called');
+    let userId = req.params.userId;
+    User.delete(userId,
+        (result) => res.send(
+            {
+                success: true
+            }
+        ),
+        (db_error) => res.send(
+            {
+                success: false,
+                error: db_error
+            }
+        )
+    );
+};
