@@ -146,3 +146,27 @@ exports.getContentInfoListByUserId = (req, res) => {
         )
     );
 }
+
+exports.authenticateUser = (req, res) => {
+    console.log('user.controller::authenticateUser called');
+    // TODO: improve auth with tokens
+    User.findUserByUsername(
+        req.body.username,
+        (user) => {
+            let isAuthenticated = user.password === req.body.password; // TODO change to method that checks tokens instead.
+            let userId = null;
+            if (isAuthenticated) {
+                userId = user.id;
+            }
+            let return_obj = {
+                "isAuthenticated": isAuthenticated,
+                "userId": userId
+              };
+            res.send(return_obj);
+        },
+        (error_description) => res.send({
+          "isAuthenticated": false,
+          "userId": null
+        }) // TODO: improve error info.
+      );
+  }
