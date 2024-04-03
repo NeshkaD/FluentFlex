@@ -117,3 +117,32 @@ exports.delete = (req, res) => {
         )
     );
 };
+
+exports.getContentInfoListByUserId = (req, res) => {
+    console.log('user.controller::getContentInfoListByUserId called');
+    let userId = req.params.userId;
+    Content.findContentInfosByUserId(
+        userId,
+        (db_result) => {
+            let listReturnObjs = [];
+            for (let row of db_result) {
+                let returnObj = { // convert DB format to JS camelcase standard.
+                    "id": row.id,
+                    "userId": row.user_id,
+                    "type": row.type,
+                    "language": row.language,
+                    "mediaTitle": row.media_title,
+                    "mediaAuthor": row.media_author
+                }
+                listReturnObjs.push(returnObj);
+            }
+            res.send(listReturnObjs);
+        },
+        (db_error) => res.send(
+            {
+                success: false,
+                error: db_error
+            }
+        )
+    );
+}
