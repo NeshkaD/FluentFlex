@@ -35,8 +35,9 @@ CREATE TABLE `fluentflex`.`srt_item` (
   `language` varchar(45) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `_idx` (`content_item_id`),
-  CONSTRAINT `fk_srt_item_content_item_content_item_id` FOREIGN KEY (`content_item_id`) REFERENCES `content_item` (`id`)
+  CONSTRAINT `fk_srt_item_content_item_content_item_id` FOREIGN KEY (`content_item_id`) REFERENCES `content_item` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
+
 
 CREATE TABLE `fluentflex`.`srt_detail` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -49,5 +50,5 @@ CREATE TABLE `fluentflex`.`srt_detail` (
   `attempts` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_srt_detail_srt_item_srt_item_id_idx` (`srt_item_id`),
-  CONSTRAINT `fk_srt_detail_srt_item_srt_item_id` FOREIGN KEY (`srt_item_id`) REFERENCES `srt_item` (`id`)
+  CONSTRAINT `fk_srt_detail_srt_item_srt_item_id` FOREIGN KEY (`srt_item_id`) REFERENCES `srt_item` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
