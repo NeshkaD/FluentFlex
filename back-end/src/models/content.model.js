@@ -11,3 +11,14 @@ function convertSrtTimestampToMilliseconds(srtTimestampString) {
     let totalMilliseconds = hour * 3600000 + minute * 60000 + second * 1000 + milli; // TODO: test a large timestamp
     return totalMilliseconds;
 }
+
+// constructor
+const Content = function (content) {
+    this.id = content.id;
+    this.userId = content.userId;
+    this.type = content.type;
+    this.language = content.language;
+    this.media = content.media;
+    this.mediaTitle = content.mediaTitle;
+    this.mediaAuther = content.mediaAuthor;
+};
