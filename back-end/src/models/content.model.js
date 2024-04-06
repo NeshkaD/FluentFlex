@@ -12,6 +12,17 @@ function convertSrtTimestampToMilliseconds(srtTimestampString) {
     return totalMilliseconds;
 }
 
+// constructor
+const Content = function (content) {
+    this.id = content.id;
+    this.userId = content.userId;
+    this.type = content.type;
+    this.language = content.language;
+    this.media = content.media;
+    this.mediaTitle = content.mediaTitle;
+    this.mediaAuther = content.mediaAuthor;
+};
+
 // TODO: Reduce nesting in the following method with promises.
 // This parameter order has been chosen to match the nodejs mysql API being used. 
 Content.createContent = (
