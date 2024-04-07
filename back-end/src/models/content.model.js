@@ -130,3 +130,61 @@ Content.createContent = (
         );
     });
 }
+
+// This parameter order has been chosen to match the nodejs mysql API being used. 
+Content.findContentById = (contentId, callback, err_callback) => {
+    db.query(
+        'SELECT * FROM content_item WHERE id = ?', // TODO: check userId to prevent user from requesting content they don't own
+        [contentId],
+        (error, result) => {
+            let error_description = ''
+            if (error) {
+                error_description = `Error searching for content with contentId ${contentId}: ${error}`
+                console.log(error_description);
+                err_callback(error_description);
+            }
+            else if (result.length < 1) {
+                error_description = `No content with id ${contentId}.`
+                console.log(error_description);
+                err_callback(error_description);
+            }
+            else if (result.length > 1) {
+                error_description = `Multiple contents exist with id ${contentId}.`
+                console.log(error_description);
+                err_callback(error_description);
+            }
+            else {
+                callback(result[0]);
+            }
+        }
+    );
+}
+
+// Excludes the audio blob
+Content.findContentInfoById = (contentId, callback, err_callback) => {
+    db.query(
+        'SELECT id, user_id, type, language, media_title, media_author FROM content_item WHERE id = ?', // TODO: check userId to prevent user from requesting content they don't own
+        [contentId],
+        (error, result) => {
+            let error_description = ''
+            if (error) {
+                error_description = `Error searching for content info with contentId ${contentId}: ${error}`
+                console.log(error_description);
+                err_callback(error_description);
+            }
+            else if (result.length < 1) {
+                error_description = `No content info with id ${contentId}.`
+                console.log(error_description);
+                err_callback(error_description);
+            }
+            else if (result.length > 1) {
+                error_description = `Multiple content infos exist with id ${contentId}.`
+                console.log(error_description);
+                err_callback(error_description);
+            }
+            else {
+                callback(result[0]);
+            }
+        }
+    );
+}
