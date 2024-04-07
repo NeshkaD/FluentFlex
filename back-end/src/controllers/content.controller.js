@@ -161,3 +161,51 @@ exports.createContent = (req, res) => {
         }
     )
 };
+
+exports.getContentById = (req, res) => {
+    console.log('content.controller::getContentById called');
+    Content.findContentById(
+        req.params.contentId,
+        (content, err) => {
+            if (err) {
+                res.sendStatus(500);
+            }
+            console.log(content);
+            let buffer = Buffer.from(content.media);
+            res.set({
+                "Accept-Ranges": "bytes" // To stop media restarting at 0 seconds, per this answer: https://stackoverflow.com/questions/36783521/why-does-setting-currenttime-of-html5-video-element-reset-time-in-chrome
+            // More info: https://stackoverflow.com/questions/65941347/how-can-i-add-the-accept-ranges-header-to-the-response-in-nodejs
+            
+            });
+            res.send(buffer);
+        }
+    );
+};
+
+exports.getContentInfoById = (req, res) => {
+    console.log('content.controller::getContentInfoById called');
+    Content.findContentInfoById(
+        req.params.contentId,
+        (result) => {
+        if (result.length < 1) {
+            res.sendStatus(404); // TODO: Rainyday test for this!
+        }
+        if (result.length > 1) {
+            console.log(`content.controller::get found multiple with `);
+            res.sendStatus(500); // TODO: This probably is not testable, as DB key unique
+        }
+        let returnObj = { // convert DB format to JS camelcase standard.
+            "id": result.id,
+            "userId": result.user_id,
+            "type": result.type,
+            "language": result.language,
+            "mediaTitle": result.media_title,
+            "mediaAuthor": result.media_author
+        }
+        res.send(returnObj);
+    },
+    (error) => {
+        console.log(error);
+        res.sendStatus(404); // TODO: This callback fixes bugging out when content id requested does not exist: TypeError: err_callback is not a function. BUT, we should probably send empty response, not a 404.
+    });
+};
