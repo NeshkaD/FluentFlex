@@ -131,6 +131,7 @@ Content.createContent = (
     });
 }
 
+
 // This parameter order has been chosen to match the nodejs mysql API being used. 
 Content.findContentById = (contentId, callback, err_callback) => {
     db.query(
@@ -188,3 +189,91 @@ Content.findContentInfoById = (contentId, callback, err_callback) => {
         }
     );
 }
+
+// Excludes the audio blob
+Content.findContentInfosByUserId = (userId, callback, err_callback) => {
+    db.query(
+        'SELECT id, user_id, type, language, media_title, media_author FROM content_item WHERE user_id = ?', // TODO: check userId to prevent user from requesting content they don't own
+        [userId],
+        (error, result) => {
+            let error_description = ''
+            if (error) {
+                error_description = `Error searching for content info with userId ${userId}: ${error}`
+                console.log(error_description);
+                err_callback(error_description);
+            }
+            else {
+                callback(result);
+            }
+        }
+    );
+}
+
+Content.findSrtItemIdsAndInfoByContentId = (contentId, callback) => {
+    db.query(
+        'SELECT id, type, language FROM srt_item WHERE content_item_id = ?',
+        [contentId],
+        (error, result) => {
+            if (error) {
+                console.log(`Failed to get srt_item ids and info for content item ${contentId}. Error: ${error}`);
+                callback(result, error);
+            }
+            else {
+                callback(result);
+            }
+        }
+    );
+};
+
+Content.findSrtDetailsBySrtItemId = (srtItemId, callback) => {
+    db.query(
+        'SELECT * FROM srt_detail WHERE srt_item_id = ?',
+        [srtItemId],
+        (error, result) => {
+            if (error) {
+                console.log(`Failed to get srt_details for srt_item id ${srtItemId}. Error: ${error}`);
+                callback(result, error);
+            }
+            else {
+                callback(result);
+            }
+        }
+    );
+};
+
+Content.patchSrtDetailBasedOnAnswer = (srtDetailId, isCorrectAnswer, callback) => {
+    if(isCorrectAnswer) {
+        db.query(
+            'UPDATE srt_detail SET attempts = attempts + 1, score = score + 1 WHERE id = ?',
+            [srtDetailId],
+            (error, result) => {
+                callback(result, error);
+            }
+        );
+    }
+    else {
+        db.query(
+            'UPDATE srt_detail SET attempts = attempts + 1 WHERE id = ?',
+            [srtDetailId],
+            (error, result) => {
+                callback(result, error);
+            }
+        );
+    }
+}
+
+Content.delete = (contentId, callback, error_callback) => {
+    // Currently relies on CASCADE ON DELETE to delete srt_item and srt_detail rows
+    db.query('DELETE FROM content_item WHERE id = ?',
+             [contentId],
+             (error, result) => {
+                if (error) {
+                    error_callback(error); // error_callback should be a function that takes the error as an argument and handles it
+                }
+                else {
+                    callback(result);
+                }
+            });
+}
+
+module.exports = Content;
