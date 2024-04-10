@@ -264,3 +264,22 @@ exports.patchSrtDetailBasedOnAnswer = (req, res) =>  {
         }
     );
 };
+
+exports.deleteContentById = (req, res) => {
+    console.log('content.controller::deleteContentById called');
+    let contentId = req.params.contentId;
+    Content.delete(contentId,
+        (result) => res.send(
+            {
+                success: true,
+                error: null
+            }
+        ),
+        (db_error) => res.send(
+            {
+                success: false,
+                error: db_error
+            }
+        )
+    );
+};
