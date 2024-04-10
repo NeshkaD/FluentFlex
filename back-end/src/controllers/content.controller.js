@@ -250,3 +250,17 @@ exports.getSrtDetailsByContentId = (req, res) => { // TODO: Maybe implement simi
         }
     );
 };
+
+exports.patchSrtDetailBasedOnAnswer = (req, res) =>  {
+    console.log('content.controller::patchSrtDetailBasedOnAnswer called');
+    Content.patchSrtDetailBasedOnAnswer(
+        req.body.srtDetailId,
+        req.body.isCorrectAnswer,
+        (result, err) => {
+            if (err) {
+                res.sendStatus(500);
+            }
+            res.send({success: true, error: null});
+        }
+    );
+};
