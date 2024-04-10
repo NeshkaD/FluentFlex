@@ -209,3 +209,44 @@ exports.getContentInfoById = (req, res) => {
         res.sendStatus(404); // TODO: This callback fixes bugging out when content id requested does not exist: TypeError: err_callback is not a function. BUT, we should probably send empty response, not a 404.
     });
 };
+
+exports.getSrtDetailsByContentId = (req, res) => { // TODO: Maybe implement similar method that only returns srt_details in the content language. And a separate method for user's own language(s).
+    console.log('content.controller::getSrtDetailsByContentId called');
+    let returnObj = {};
+    Content.findSrtItemIdsAndInfoByContentId(
+        req.params.contentId,
+        (srtItemIdsAndInfo, err) => {
+            console.log(srtItemIdsAndInfo);
+            if (err) {
+                res.sendStatus(500);
+            }
+            else {
+                if (srtItemIdsAndInfo.length < 2) {
+                    res.sendStatus(500);
+                    return;   
+                }
+                Content.findSrtDetailsBySrtItemId(
+                    srtItemIdsAndInfo[0].id, // TODO: errors out when srtItemIdsAndInfo is undefined. Possibly now fixed. Test.
+                    (srtDetails1, err) => {
+                        console.log(srtDetails1);
+                        if (err) {
+                            res.sendStatus(500);
+                        }
+                        returnObj[srtItemIdsAndInfo[0].language] = srtDetails1;
+                        Content.findSrtDetailsBySrtItemId(
+                            srtItemIdsAndInfo[1].id, // TODO: Change this to for loop implementation to handle higher number of srt items if needed.
+                            (srtDetails2, err) => {
+                                console.log(srtDetails2);
+                                if (err) {
+                                    res.sendStatus(500);
+                                }
+                                returnObj[srtItemIdsAndInfo[1].language] = srtDetails2;
+                                res.send(returnObj);
+                            }
+                        );
+                    }
+                );
+            }
+        }
+    );
+};
