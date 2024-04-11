@@ -1,0 +1,44 @@
+<p> </p>
+<div>
+  <div class="text-center">
+    <img class="img-fluid" src="assets/images/logo.png" style="max-width: 25%;">
+  </div>
+    <div class="submit-form">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          class="form-control"
+          [(ngModel)]="username"
+          name="username"
+          required
+        />
+      </div>
+  
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          class="form-control"
+          [(ngModel)]="password"
+          name="password"
+          required
+        />
+      </div>
+  
+      <button (click)="login()" class="btn btn-success">Submit</button>
+      
+  
+      <div *ngIf="loginState==1">
+        <p>Signing you in - processing!</p>
+      </div>
+      <div *ngIf="loginState==2">
+        <p>Username or passsword not valid!</p>
+      </div>
+      <div *ngIf="loginState==3">
+        <p>Something went wrong. Please refresh and try again!</p>
+      </div>
+    </div>
+  </div>
