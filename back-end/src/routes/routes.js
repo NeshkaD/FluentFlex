@@ -22,6 +22,40 @@ module.exports = web_app => {
 
     // Post username, email address, and password to create a new user in the user table:
     router.post("/user", userController.createUser);  
+
+      
+    // Update an srtDetail when user submits an answer.
+    router.patch("/content/srtdetail/answer", contentController.patchSrtDetailBasedOnAnswer);
+
+    // Get info about a contentItem without getting the audio file blob
+    router.get("/content/:contentId/info", contentController.getContentInfoById); 
+
+    // Get list of SrtDetails for a given content item.
+    router.get("/content/:contentId/srtdetails", contentController.getSrtDetailsByContentId); 
+
+    // Get audio file blob for content item.
+    router.get("/content/:contentId", contentController.getContentById); 
+
+    // Delete audio file blob for content item.
+    router.delete("/content/:contentId", contentController.deleteContentById); 
+
+    const multer  = require('multer')
+    // const upload = multer({ dest: 'uploads/' }) TODO: remove if not using local file system storage
+    const storage = multer.memoryStorage()
+    const upload = multer({ storage: storage })
+
+    // Post username, email address, and password to create a new user in the user table:
+    router.post(
+      "/content",
+      upload.fields(
+        [
+          { name: 'media', maxCount: 1 },
+          { name: 'userLangSrt', maxCount: 1 },
+          { name: 'foreignLangSrt', maxCount: 1 },
+        ]
+      ),
+      contentController.createContent
+    );  
   
     web_app.use('/', router);
   };
