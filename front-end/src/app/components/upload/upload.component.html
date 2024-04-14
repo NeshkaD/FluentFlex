@@ -1,0 +1,76 @@
+<h2>File Upload</h2>
+<div class="upload-content-form">
+  <div class="form-group">
+    <label for="content-title-input">Content Title</label>
+    <input type="text" id="content-title-input" class="form-control" [(ngModel)]="contentTitle" name="content-title-name" required />
+  </div>
+  <div class="form-group">
+    <label for="content-author-input">Content Author</label>
+    <input type="text" id="content-author-input" class="form-control" [(ngModel)]="contentAuthor" name="content-author-name" required />
+  </div>
+  <div class="form-group">
+    <label for="content-language-input">Content Language</label>
+    <input type="text" id="content-language-input" class="form-control" [(ngModel)]="contentLanguage" name="content-language-name" required />
+  </div>
+  <div class="form-group">
+    <label for="translation-language-input">Translation Language</label>
+    <input type="text" id="translation-language-input" class="form-control" [(ngModel)]="translationLanguage" name="translation-language-name" required />
+  </div>
+  <div class="form-group">
+  <label for="content-file-input">Audio file:</label>
+  <input id="content-file-input" name="content-file-input" type="file" class="file-input" (change)="onChangeMediaFile($event)" #mediaFileUpload />
+  </div>
+  <div *ngIf="mediaFile">
+    <section class="file-info">
+      Media file details:
+      <ul>
+        <li>Name: {{mediaFile.name}}</li>
+        <li>Type: {{mediaFile.type}}</li>
+        <li>Size: {{mediaFile.size}} bytes</li>
+      </ul>
+    </section>
+  </div>
+
+  <div class="form-group">
+    <label for="foreign-language-srt-file-input">Content language SRT file:</label>
+    <input id="foreign-language-srt-file-input" name="foreign-language-srt-file-input" type="file" class="file-input" (change)="onChangeForeignLanguageSrtFile($event)" />
+    </div>
+
+    <div *ngIf="foreignLanguageSrtFile">
+      <section class="file-info">
+        Content language SRT file details:
+        <ul>
+          <li>Name: {{foreignLanguageSrtFile.name}}</li>
+          <li>Type: {{foreignLanguageSrtFile.type}}</li>
+          <li>Size: {{foreignLanguageSrtFile.size}} bytes</li>
+        </ul>
+      </section>
+    </div>
+  </div>
+
+  <div class="form-group">
+  <label for="translation-language-srt-file-input">Translation language SRT file:</label>
+  <input id="translation-language-srt-file-input" name="translation-language-srt-file-input" type="file" class="file-input" (change)="onChangeUserLanguageSrtFile($event)" #userLanguageSrtFileUpload />
+  </div>
+
+  <div *ngIf="userLanguageSrtFile">
+    <section class="file-info">
+      Translation language SRT file details:
+      <ul>
+        <li>Name: {{userLanguageSrtFile.name}}</li>
+        <li>Type: {{userLanguageSrtFile.type}}</li>
+        <li>Size: {{userLanguageSrtFile.size}} bytes</li>
+      </ul>
+    </section>
+  </div>
+
+<div *ngIf="mediaFile && userLanguageSrtFile && foreignLanguageSrtFile">
+  <button (click)="onUpload()">Upload the files</button>
+
+  <section [ngSwitch]="status">
+    <p *ngSwitchCase="'uploading'">⏳ Uploading...</p>
+    <p *ngSwitchCase="'success'">✅ Done!</p>
+    <p *ngSwitchCase="'fail'">❌ Error!</p>
+    <p *ngSwitchDefault>😶 Waiting to upload...</p>
+  </section>
+</div>
