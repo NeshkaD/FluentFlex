@@ -1,0 +1,28 @@
+<div class="header-center"><h1>Study Mode</h1></div>
+<br>
+<br>
+
+<div *ngIf="contentItemInfo" class="container">
+    <div class="row">
+        <div class="col-1 text-center border"></div>
+        <div class="col-1 text-center border">Time</div>
+        <div class="col-5 text-center border">Transcription ({{contentItemInfo?.language}})</div>
+        <div class="col-5 text-center border">Translation ({{userLanguage}})</div>
+    </div>
+    <div [ngClass]="{'bg-success': lineIndexSelected===i && isPlaying}" class="row" *ngFor="let srtDetail of srtDetails[contentItemInfo.language]; let i = index">
+        <div class="col-1 text-center border"><i [ngClass]="{'bi':true, 'bi-play-circle':true,'ff-play-btn-clickable':isPlayButtonEnabled}" (click)="onClickPlayButton($event, srtDetail, i)"></i></div>
+        <div id="{{'srtdetail-timestamp-start-'+i}}" class="col-1 text-center border">{{convertMillisecondsToTimestamp(srtDetail.timestamp_start)}}</div> <!--TODO: convert to timestamp format-->
+        <div id="{{'srtdetail-line-'+i}}" class="col-5 text-center border">{{srtDetail.line}}</div>
+        <div class="col-5 text-center border">{{srtDetails[userLanguage][i].line}}</div>
+    </div>
+</div>
+
+<a *ngIf="contentItemInfo" routerLink="/quiz/{{contentItemInfo.id}}">
+    <button id="quiz-btn" type="button" class="btn btn-primary">Quiz</button>
+</a>
+
+
+<audio preload="auto" (playing)="onAudioPlaying()" (timeupdate)="onAudioTimeUpdate()" hidden [src]="audioSource | safe:'url'" id="audio" controls #audioTag>
+</audio>
+
+<!-- <button (click)="seekAndPlay(10, 15)">Test seekAndPlay</button> -->
