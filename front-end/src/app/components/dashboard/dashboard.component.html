@@ -1,0 +1,61 @@
+<ng-template #deleteContentModal let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title" id="modal-basic-title">Delete Content: {{currentChosenContentToDelete.name}}</h4>
+        <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+    </div>
+    <div class="modal-body">
+        <p>
+            You have chosen to delete: '{{currentChosenContentToDelete.name}}'. Are you sure?<br>
+            <strong>This operation cannot be undone!</strong>
+        </p>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss('cancel')">Cancel</button>
+        <button type="button" class="btn btn-danger" (click)="onClickConfirmDeleteButton($event)">Delete now</button>
+    </div>
+</ng-template>
+
+<h1>Dashboard</h1>
+<div>
+    <a routerLink="/upload">
+        <button id="upload-content-btn" type="button" class="btn btn-outline-success"
+            (click)="onClickUploadButton($event)">Upload Content</button>
+    </a>
+    <a>
+        <button id="get-demo-data-btn" type="button" class="btn btn-outline-primary"
+            (click)="onClickDemoDataButton($event)">Get demo data</button>
+    </a>
+</div>
+<br>
+
+<div id="content-list-table" class="container">
+    <div class="row">
+        <div class="col-3 text-center border">Content Title</div>
+        <div class="col-3 text-center border">Content Author</div>
+        <div class="col-3 text-center border">Content Language</div>
+        <div class="col-3 text-center border">Menu</div>
+    </div>
+    <div *ngFor="let content of contentItemInfoList; let i = index" class="row">
+        <div id="{{'content-name-'+i}}" class=" col-3 text-center border">{{content.mediaTitle}}</div>
+        <div id="{{'content-author-'+i}}" class="col-3 text-center border">{{content.mediaAuthor}}</div>
+        <div id="{{'content-language-'+i}}" class="col-3 text-center border">{{content.language}}</div>
+        <div class="col-3 text-center border">
+            <a routerLink="/study/{{content.id}}">
+                <button id="{{'content-study-btn-'+i}}" type="button" class="btn btn-success"
+                    (click)="onClickStudyButton($event, content)">
+                    Study
+                </button>
+            </a>
+            <a routerLink="/quiz/{{content.id}}">
+                <button id="{{'content-quiz-btn-'+i}}" type="button" class="btn btn-secondary"
+                    (click)="onClickQuizButton($event, content)">
+                    Quiz
+                </button>
+            </a>
+            <button id="{{'content-delete-btn-'+i}}" type="button" class="btn btn-danger"
+                (click)="onClickDeleteButton($event, content, deleteContentModal)">
+                Delete
+            </button>
+        </div>
+    </div>
+</div>
