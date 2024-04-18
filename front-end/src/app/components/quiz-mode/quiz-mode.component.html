@@ -1,0 +1,63 @@
+<div class="alert alert-dismissible alert-danger">
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <strong>Oh snap! This page is still under construction. </strong> <a href="#" class="alert-link">Change a few things
+        up</a> and try submitting again.
+</div>
+
+<div class="header-center">
+    <h1>Quiz Mode</h1>
+</div>
+
+<!-- <audio controls id="$audio"
+    src="https://archive.org/download/1970-1979RadioNews/1970-05-04-NBCTV-Nightly-News.mp3"></audio><br> -->
+
+<div *ngIf="!isQuizComplete">
+    <div class="col-1 text-center border"><i class="bi bi-play-circle" (click)="onClickPlayButton($event)"></i></div>
+    <audio preload="auto" (playing)="onAudioPlaying()" (timeupdate)="onAudioTimeUpdate()" hidden
+        [src]="audioSource | safe:'url'" id="audio" controls #audioTag>
+    </audio>
+    <br>
+    <br>
+    <div>
+        <textarea [ngClass]="{'border': true, 'border-success': isAnswerShowing && isLastAnswerCorrect, 'border-danger' : isAnswerShowing && !isLastAnswerCorrect }" [disabled]="!canUpdateAnswer" [(ngModel)]="userInputAnswer" id="langapp" name="langapp" rows="4" cols="150"
+            placeholder="Enter what you hear from the audio."></textarea>
+        <br>
+        <input *ngIf="canUpdateAnswer" (click)="onSubmitAnswer()" type="submit" value="Submit" class="btn btn-secondary btn-lg">
+    </div>
+</div>
+<div *ngIf="isAnswerShowing" class="container">
+    <h5 *ngIf="isLastAnswerCorrect">Correct!</h5>
+    <h5 *ngIf="!isLastAnswerCorrect">Incorrect!</h5>
+    <div class="row">
+        <div class="col-6 text-center border">Your Answer</div>
+        <div class="col-6 text-center border">Correct Answer</div>
+    </div>
+    <div class="row">
+        <div class="col-6 text-center border">{{userInputAnswer}}</div>
+        <div class="col-6 text-center border">{{srtDetails[contentItemInfo.language][currentSrtDetailIndex].line}}</div>
+    </div>
+
+    <input (click)="nextQuestion()" value="Next" class="btn btn-secondary btn-lg">
+</div>
+<div *ngIf="isQuizComplete" class="container">
+    <div class="row">
+        <div class="col-3 text-center border">{{contentItemInfo?.language}}</div>
+        <div class="col-3 text-center border">{{userLanguage}}</div>
+        <div class="col-2 text-center border">Start time</div>
+        <div class="col-2 text-center border">End time</div>
+        <div class="col-1 text-center border">Total score</div>
+        <div class="col-1 text-center border">Total attempts</div>
+    </div>
+    <div class="row" *ngFor="let srtDetail of srtDetails[contentItemInfo.language]; let i = index">
+        <div id="{{'srtdetail-line-'+i}}" class="col-3 text-center border">{{srtDetail.line}}</div>
+        <div class="col-3 text-center border">{{srtDetails[userLanguage][i].line}}</div>
+        <div id="{{'srtdetail-timestamp-start-'+i}}" class="col-2 text-center border">
+            {{convertMillisecondsToTimestamp(srtDetail.timestamp_start)}}</div>
+        <div id="{{'srtdetail-timestamp-end-'+i}}" class="col-2 text-center border">
+            {{convertMillisecondsToTimestamp(srtDetail.timestamp_end)}}</div>
+        <div id="{{'srtdetail-score-'+i}}" class="col-1 text-center border">{{srtDetail.score}}</div>
+        <div id="{{'srtdetail-attempts-'+i}}" class="col-1 text-center border">{{(srtDetail.attempts)}}</div>
+    </div>
+
+    <input (click)="restartQuiz()" value="Restart Quiz" class="btn btn-secondary btn-lg">
+</div>
