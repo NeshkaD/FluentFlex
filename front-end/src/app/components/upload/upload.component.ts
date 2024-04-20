@@ -29,9 +29,9 @@ export class UploadComponent {
   ngOnInit(): void {
     this.currentUserId = this.apiService.getCurrentUser();
     console.log(this.currentUserId);
-    // if (!this.apiService.getCurrentUser()) {
-    //   this.router.navigate(['/login']);
-    // }
+    if (!this.currentUserId) {
+      this.router.navigate(['/login']);
+    }
   }
 
   onChangeMediaFile(event: any) {
