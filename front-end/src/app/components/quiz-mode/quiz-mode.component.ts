@@ -52,7 +52,7 @@ export class QuizModeComponent {
           console.log(`Got content info: ${JSON.stringify(value)}`);
           this.contentItemInfo = value;
           console.log(this.contentItemInfo.id);
-          this.audioSource = `http://localhost:8080/content/${this.contentItemInfo.id}`;
+          this.audioSource = this.apiService.getAudioSourceUrl(this.contentItemInfo.id);
           this.apiService.getSrtDetailsByContentItemId(contentItemId).subscribe(
             {
               next: value => {
