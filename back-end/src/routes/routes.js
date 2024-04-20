@@ -44,7 +44,10 @@ module.exports = web_app => {
     const storage = multer.memoryStorage()
     const upload = multer({ storage: storage })
 
-    // Post username, email address, and password to create a new user in the user table:
+    // Post demo data to content table for the user making the request
+    router.post("/content/demo-content", contentController.createDemoContentForUser);
+
+    // Post content (mp3 and srt files) to content_item, srt_item, and srt_details tables.
     router.post(
       "/content",
       upload.fields(
