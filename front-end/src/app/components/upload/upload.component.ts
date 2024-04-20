@@ -80,8 +80,8 @@ export class UploadComponent {
 
 
 
-      const upload$ = this.http.post("http://18.236.72.140:8080/content", formData);
-
+      const upload$ = this.apiService.postUploadForm(formData);
+      
       this.status = "uploading";
 
       upload$.subscribe({
