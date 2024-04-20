@@ -2,11 +2,9 @@ module.exports = web_app => {
     let router = require("express").Router();
     const userController = require("../controllers/user.controller.js");
     const contentController = require("../controllers/content.controller.js");
-
   
     // Get list of content infos by userId.
     router.get("/user/:userId/contentinfolist", userController.getContentInfoListByUserId);
-    // TODO: change to use URL query paramaters and move to content controller.
 
     // Get details for a specific user by ID:
     router.get("/user/:userId", userController.getUserById); 
@@ -23,7 +21,6 @@ module.exports = web_app => {
     // Post username, email address, and password to create a new user in the user table:
     router.post("/user", userController.createUser);  
 
-      
     // Update an srtDetail when user submits an answer.
     router.patch("/content/srtdetail/answer", contentController.patchSrtDetailBasedOnAnswer);
 
@@ -36,11 +33,11 @@ module.exports = web_app => {
     // Get audio file blob for content item.
     router.get("/content/:contentId", contentController.getContentById); 
 
-    // Delete audio file blob for content item.
+    // Delete audio file blob and srt details for content item.
     router.delete("/content/:contentId", contentController.deleteContentById); 
 
+    // Initialize multer middleware for HTTP multipart requests and configure to use in-memory storage instead of filesystem.
     const multer  = require('multer')
-    // const upload = multer({ dest: 'uploads/' }) TODO: remove if not using local file system storage
     const storage = multer.memoryStorage()
     const upload = multer({ storage: storage })
 
@@ -60,6 +57,7 @@ module.exports = web_app => {
       contentController.createContent
     );  
   
+    // Instruct the server to use these routes:
     web_app.use('/', router);
   };
   

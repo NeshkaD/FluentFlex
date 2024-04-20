@@ -1,9 +1,11 @@
 const User = require("../models/user.model.js");
 const Content = require("../models/content.model.js");
 
+// Create user and reply to client with success or error information.
 exports.createUser = (req, res) => {
-    console.log('auth.controller::register called');
+    console.log('user.controller::register called');
 
+    // Validate required fields:
     if (!req.body.username) {
         let returnObj = {
             "success": false,
@@ -31,7 +33,7 @@ exports.createUser = (req, res) => {
         return;
     }
 
-    // TODO: improve auth with tokens
+    // Call model method to create User in DB:
     User.createUser(
         req.body.username,
         req.body.email,
@@ -56,13 +58,16 @@ exports.createUser = (req, res) => {
                 returnObj.error = 'Sorry, something went wrong! Please try again.';
             }
 
-            res.send(returnObj);
+            res.send(returnObj); // Send outcome info to client.
         }
     );
 };
 
+// Given a userId, reply to client with all info about the user
 exports.getUserById = (req, res) => {
     console.log('user.controller::getUserById called');
+
+    // Call model method to obtain user info from the DB:
     User.findUserById(
         req.params.userId,
         (user, err) => {
@@ -73,18 +78,22 @@ exports.getUserById = (req, res) => {
                 username: user.username,
                 email: user.email
             }
-            res.send(userResponseObj);
+            res.send(userResponseObj); // Send user info to client.
         }
     );
 }
 
+// Given the ID for an existing user, update info about that user in the DB
 exports.update = (req, res) => {
     console.log('user.controller::update called');
-    let userId = req.body.userId; // TODO: handle error case where userId is not included in HTTP request body.
+    let userId = req.body.userId;
     let username = req.body.username;
     let email = req.body.email;
     let password = req.body.password
+
+    // Call model method to update user info in the DB:
     User.update(userId, username, email, password,
+        // Send outcome info to client:
         (db_result) => res.send(
             {
                 success: true,
@@ -100,10 +109,14 @@ exports.update = (req, res) => {
     );
 };
 
+// Given the ID for an existing user, delete that user from the DB
 exports.delete = (req, res) => {
     console.log('user.controller::delete called');
     let userId = req.params.userId;
+
+    // Call model method to delete user from the DB:
     User.delete(userId,
+        // Send outcome info to client:
         (result) => res.send(
             {
                 success: true
@@ -118,15 +131,18 @@ exports.delete = (req, res) => {
     );
 };
 
+// Handle request to get list of content item info based on a given user ID
 exports.getContentInfoListByUserId = (req, res) => {
     console.log('user.controller::getContentInfoListByUserId called');
     let userId = req.params.userId;
+
+    // Call model method to find list of content item info for this user:
     Content.findContentInfosByUserId(
         userId,
         (db_result) => {
             let listReturnObjs = [];
             for (let row of db_result) {
-                let returnObj = { // convert DB format to JS camelcase standard.
+                let returnObj = {
                     "id": row.id,
                     "userId": row.user_id,
                     "type": row.type,
@@ -134,9 +150,9 @@ exports.getContentInfoListByUserId = (req, res) => {
                     "mediaTitle": row.media_title,
                     "mediaAuthor": row.media_author
                 }
-                listReturnObjs.push(returnObj);
+                listReturnObjs.push(returnObj); // Add info to the response object
             }
-            res.send(listReturnObjs);
+            res.send(listReturnObjs); // Send response to client
         },
         (db_error) => res.send(
             {
@@ -147,13 +163,16 @@ exports.getContentInfoListByUserId = (req, res) => {
     );
 }
 
+// Handle request to authenticate a user
 exports.authenticateUser = (req, res) => {
     console.log('user.controller::authenticateUser called');
-    // TODO: improve auth with tokens
+
+    // Call model method to find user from the DB by username:
     User.findUserByUsername(
         req.body.username,
         (user) => {
-            let isAuthenticated = user.password === req.body.password; // TODO change to method that checks tokens instead.
+            // Validate user info:
+            let isAuthenticated = user.password === req.body.password;
             let userId = null;
             if (isAuthenticated) {
                 userId = user.id;
@@ -162,11 +181,11 @@ exports.authenticateUser = (req, res) => {
                 "isAuthenticated": isAuthenticated,
                 "userId": userId
               };
-            res.send(return_obj);
+            res.send(return_obj); // Send response with outcome.
         },
-        (error_description) => res.send({
+        (error_description) => res.send({ // Send error response with outcome.
           "isAuthenticated": false,
           "userId": null
-        }) // TODO: improve error info.
+        })
       );
   }

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 
+// Profile page
 @Component({
   selector: 'app-profile',
   standalone: true,

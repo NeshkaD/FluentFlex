@@ -24,8 +24,10 @@ export class UploadComponent {
   contentAuthor : any;
   currentUserId : any;
 
+  // Inject HTTP and routing dependencies
   constructor(private http: HttpClient, private router: Router, private apiService: ApiService) {}
 
+  // Initialize form state. Redirect to login page if user not logged in.
   ngOnInit(): void {
     this.currentUserId = this.apiService.getCurrentUser();
     console.log(this.currentUserId);
@@ -34,6 +36,7 @@ export class UploadComponent {
     }
   }
 
+  // Show details about chosen MP3 file
   onChangeMediaFile(event: any) {
     const chosenFile: File = event.target.files[0];
 
@@ -43,6 +46,7 @@ export class UploadComponent {
     }
   }
 
+  // Show details about chosen translation SRT file
   onChangeUserLanguageSrtFile(event: any) {
     const chosenFile: File = event.target.files[0];
 
@@ -52,6 +56,7 @@ export class UploadComponent {
     }
   }
 
+  // Show details about chosen content SRT file
   onChangeForeignLanguageSrtFile(event: any) {
     const chosenFile: File = event.target.files[0];
 
@@ -61,6 +66,7 @@ export class UploadComponent {
     }
   }
 
+  // Send HTTP request to upload files
   onUpload() {
     if (this.mediaFile && this.userLanguageSrtFile && this.foreignLanguageSrtFile) { // TODO: make userLanguageSrtFile optional later
       const formData = new FormData();
@@ -75,10 +81,6 @@ export class UploadComponent {
       formData.append("media", this.mediaFile, "content-file");
       formData.append("userLangSrt", this.userLanguageSrtFile, "user-lang-srt-file");
       formData.append("foreignLangSrt", this.foreignLanguageSrtFile, "foreign-lang-srt-file");
-      
-      
-
-
 
       const upload$ = this.apiService.postUploadForm(formData);
       

@@ -36,27 +36,12 @@ export class StudyModeComponent {
     this.lineIndexSelected = 0;
   }
 
+  // Send HTTP requests to backend to obtain SRT lines and audio file
   ngOnInit(): void {
     if (!this.apiService.getCurrentUser()) { // TODO: check if current user owns content.
       this.router.navigate(['/login']);
     }
-    // let blob$: Observable<ArrayBuffer> = this.http.get(`http://localhost:8080/content/3`, {responseType: "arraybuffer"});
-    // console.log(blob$);
-    // blob$.subscribe(arrayBuffer => {
-    //   console.log(arrayBuffer);
-    //   let blob=new Blob([arrayBuffer], {type : 'audio/mp3'});
-    //   console.log(blob);
-    //   let blobUrl = URL.createObjectURL(blob);
-    //   this.audioSource = blobUrl;
-    //   console.log(this.audioSource);
-    // }
-    // );
-    
-    //this.audioSource = 'http://localhost:8080/content/5#t=1,2';
-
-    // this.audio = new Audio(this.audioSource);
     let contentItemId = this.activatedRoute.snapshot.paramMap.get('id');
-    //let contentItemId = 24; // this.activatedRoute.snapshot.paramMap.get('id');
     console.log(`Initializing study mode for contentItemId ${contentItemId}`);
     this.apiService.getContentItemInfoByContentId(contentItemId).subscribe(
       {
@@ -87,17 +72,19 @@ export class StudyModeComponent {
     );
   }
 
+  // Play the audio between the given timestamps
   seekAndPlay(startTime: any, endTime: any) {
     console.log(`seekAndPlay called with startTime ${startTime} and endTime ${endTime}`);
     this.startTimeMilliseconds = startTime;
     this.endTimeMilliseconds = endTime;
     this.audioTag.nativeElement.pause();
-    this.audioTag.nativeElement.currentTime = startTime/1000; // TODO: See if we can use Renderer2 instead of nativeElement per docs
+    this.audioTag.nativeElement.currentTime = startTime/1000;
     console.log(`currentTime: ${this.audioTag.nativeElement.currentTime}`);
     console.log(`currentSrc: ${this.audioTag.nativeElement.currentSrc}`);
     this.audioTag.nativeElement.play();
   }
 
+  // React to click event on play button
   onClickPlayButton(event: any, srtDetail: any, index: number): void {
     if(this.isPlayButtonEnabled) {
       this.lineIndexSelected = index;
@@ -106,11 +93,13 @@ export class StudyModeComponent {
     }
   }
 
+  // Update audio playing flag to true when audio is playing
   onAudioPlaying(): void {
     console.log('playing event received');
     this.isPlaying = true;
   }
 
+  // Update flags and set timer to ensure audio stops at correct timestamp
   onAudioTimeUpdate(): void {
     console.log(`timeupdate event received and isPlaying==${this.isPlaying} and isPlayerTimeoutSet==${this.isPlayerTimeoutSet}`);
     if(this.isPlaying && !this.isPlayerTimeoutSet) {
@@ -124,6 +113,7 @@ export class StudyModeComponent {
     }
   }
 
+  // Helper method to convert timestamps to human-readable format
   convertMillisecondsToTimestamp(milliseconds : number){
     let hour = Math.floor(milliseconds/3600000).toString();
     let remainder = milliseconds % 3600000;
@@ -151,6 +141,7 @@ export class StudyModeComponent {
     return timestamp;
   }
 
+  // Helper method to populate the tranlation langauge name in the table
   populateTranslationLanguageName() {
     for (let languageName in this.srtDetails) {
       if (languageName !== this.contentItemInfo.language) {
@@ -158,19 +149,4 @@ export class StudyModeComponent {
       }
     }
   }
-
-  // populateSrtDetailPairs(srtDetails : any) {
-  //   console.log(this.contentItemInfo.language);
-  //   for (let srtDetail of srtDetails[this.contentItemInfo.language]) {
-  //     let newPair = [srtDetail, {line_id: srtDetail.line_id, line: ""}];
-  //     this.srtDetailPairs[srtDetail.line_id] = newPair;
-  //   }
-  //   for (let srtDetail of srtDetails[this.userLanguage]) {
-  //     let pair = this.srtDetailPairs[srtDetail.line_id];
-  //     if (pair === null) {
-  //       this.srtDetailPairs[srtDetail.line_id] = [{line_id: srtDetail.line_id, line: ""}];
-  //     }
-  //     this.srtDetailPairs[srtDetail.line_id][1] = srtDetail;
-  //   }
-  // }
 }

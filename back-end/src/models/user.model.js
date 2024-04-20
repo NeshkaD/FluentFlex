@@ -8,12 +8,14 @@ const User = function(user) {
     this.email_address = user.email_address;
 };
 
-// This parameter order has been chosen to match the nodejs mysql API being used. 
+// Find a user in the user table by username:
 User.findUserByUsername = (username, callback, err_callback) => {
+    // Select from database by username:
     db.query(
         'SELECT * FROM user WHERE username = ?',
         [username],
         (error, result) => {
+            // Call the error callback method if DB lookup fails, or if number of results != 1:
             let error_description = ''
             if (error) {
                 error_description = `Failed to find user with username ${username}. Error: ${error}`
@@ -30,6 +32,7 @@ User.findUserByUsername = (username, callback, err_callback) => {
                 console.log(error_description);
                 err_callback(error_description);
             }
+            // Call success callback:
             else {
                 callback(result[0]);
             }
@@ -37,15 +40,17 @@ User.findUserByUsername = (username, callback, err_callback) => {
     );
 }
 
-// This parameter order has been chosen to match the nodejs mysql API being used. 
+// Find a user in the user table by id:
 User.findUserById = (userId, callback, err_callback) => {
+    // Select from database by user ID:
     db.query(
         'SELECT * FROM user WHERE id = ?',
         [userId],
         (error, result) => {
+            // Call the error callback method if DB lookup fails, or if number of results != 1:
             let error_description = ''
             if (error) {
-                error_description = `Error searchin for user with userId ${userId}: ${error}`
+                error_description = `Error searching for user with userId ${userId}: ${error}`
                 console.log(error_description);
                 err_callback(error_description);
             }
@@ -59,6 +64,7 @@ User.findUserById = (userId, callback, err_callback) => {
                 console.log(error_description);
                 err_callback(error_description);
             }
+            // Call success callback:
             else {
                 callback(result[0]);
             }
@@ -66,21 +72,26 @@ User.findUserById = (userId, callback, err_callback) => {
     );
 }
 
-// TODO: Reduce nesting in the following method with promises.
-// This parameter order has been chosen to match the nodejs mysql API being used. 
+// Create a user in the user table:
 User.createUser = (username, email_address, password, callback) => {
+    // Possible reasons to reject DB insertion:
     outcome = {
         success: true,
         usernameUnique: true,
         emailUnique: true
     }
+
     let error_description = ''
+
+    // Select user by username to verify requested new username is unique:
     db.query('SELECT * FROM user WHERE username = ?', 
     [username],
     (error, result) => {
         if (result.length > 0) {
             outcome.usernameUnique = false;
         }
+
+        // Select user by email to verify requested new user email is unique:
         db.query('SELECT * FROM user WHERE email = ?',
         [email_address],
         (error, result) => {
@@ -88,8 +99,10 @@ User.createUser = (username, email_address, password, callback) => {
                 outcome.emailUnique = false;
             }
             if (outcome.usernameUnique && outcome.emailUnique) {
+
+                // Insert new row into the DB user table for new user:
                 db.query(
-                    'INSERT INTO user (username, email, password) VALUES (?, ?, ?)', // Question mark notation explained here: https://github.com/mysqljs/mysql#escaping-query-values
+                    'INSERT INTO user (username, email, password) VALUES (?, ?, ?)',
                     [username, email_address, password],
                     (error, result) => {
                         if (error) {
@@ -112,7 +125,9 @@ User.createUser = (username, email_address, password, callback) => {
     });  
 }
 
+// Update user info for a given user id in the user table:
 User.update = (userId, username, email, password, callback, error_callback) => {
+    // Build query to update multipl columns in user table:
     let query =  'UPDATE user SET';
     let queryArgs = [];
     if (username) {
@@ -132,6 +147,8 @@ User.update = (userId, username, email, password, callback, error_callback) => {
     }
     queryArgs.push(userId);
     query += 'WHERE id = ?';
+
+    // Update the user table with updated column values for this user:
     db.query(
         query,
         queryArgs,
@@ -147,13 +164,17 @@ User.update = (userId, username, email, password, callback, error_callback) => {
     );
 }
 
+// Add method to delete a user from the user table by id:
 User.delete = (userId, callback, error_callback) => {
+    // Delete from DB by id:
     db.query('DELETE FROM user WHERE id = ?',
             [userId],
             (error, result) => {
+                // Call error callback if DB error occurs:
                 if (error) {
-                    error_callback(error); // error_callback should be a function that takes the error as an argument and handles it
+                    error_callback(error);
                 }
+                // Call success callback:
                 else {
                     callback(result);
                 }

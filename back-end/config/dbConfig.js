@@ -1,4 +1,4 @@
-// Devs: change conf variable below to match the database running in your dev environment
+// Configurations for allowing access to MySQL DB running on the server.
 let conf = {
     host: "localhost",
     user: "root",

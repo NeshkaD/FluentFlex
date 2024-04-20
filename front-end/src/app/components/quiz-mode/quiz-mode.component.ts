@@ -29,6 +29,7 @@ export class QuizModeComponent {
   canUpdateAnswer: boolean = true;
   isLastAnswerCorrect = false;
 
+  // Inject dependencies for routing and http requests
   constructor(private activatedRoute: ActivatedRoute, private apiService : ApiService, private router: Router) {
     this.startTimeMilliseconds = 0;
     this.endTimeMilliseconds = 0;
@@ -38,13 +39,15 @@ export class QuizModeComponent {
     this.userLanguage = "English";
   }
 
+  // initialize state
   ngOnInit(): void {
-    if (!this.apiService.getCurrentUser()) { // TODO: check if current user owns content.
+    if (!this.apiService.getCurrentUser()) {
       this.router.navigate(['/login']);
     }
     
     let contentItemId = this.activatedRoute.snapshot.paramMap.get('id');
 
+    // Get SRT lines and mp3 audio from backend
     console.log(`Initializing quiz mode for contentItemId ${contentItemId}`);
     this.apiService.getContentItemInfoByContentId(contentItemId).subscribe(
       {
@@ -75,6 +78,7 @@ export class QuizModeComponent {
     );
   }
 
+  // Play MP3 audio between the given timestamps
   seekAndPlay(startTime: any, endTime: any) {
     console.log(`seekAndPlay called with startTime ${startTime} and endTime ${endTime}`);
     this.startTimeMilliseconds = startTime;
@@ -86,6 +90,7 @@ export class QuizModeComponent {
     this.audioTag.nativeElement.play();
   }
 
+  // Play audio based on click event
   onClickPlayButton(event: any): void {
     this.seekAndPlay(
       this.srtDetails[this.contentItemInfo.language][this.currentSrtDetailIndex].timestamp_start,
@@ -93,11 +98,13 @@ export class QuizModeComponent {
     );
   }
 
+  // Mark audio playing flag to track timing
   onAudioPlaying(): void {
     console.log('playing event received');
     this.isPlaying = true;
   }
 
+  // Update flags and set timer to ensure audio stops at correct timestamp
   onAudioTimeUpdate(): void {
     console.log(`timeupdate event received and isPlaying==${this.isPlaying} and isPlayerTimeoutSet==${this.isPlayerTimeoutSet}`);
     if(this.isPlaying && !this.isPlayerTimeoutSet) {
@@ -110,6 +117,7 @@ export class QuizModeComponent {
     }
   }
 
+  // Convert timestamp to human-readable format
   convertMillisecondsToTimestamp(milliseconds : number){
     let hour = Math.floor(milliseconds/3600000).toString();
     let remainder = milliseconds % 3600000;
@@ -137,6 +145,7 @@ export class QuizModeComponent {
     return timestamp;
   }
 
+  // Show correct translation language name
   populateTranslationLanguageName() {
     for (let languageName in this.srtDetails) {
       if (languageName !== this.contentItemInfo.language) {
@@ -145,8 +154,8 @@ export class QuizModeComponent {
     }
   }
 
+  // Submit answer to back-end HTTP API
   onSubmitAnswer() {
-    // TODO: disable the Submit button and re-enable when http call completes.
     this.canUpdateAnswer = false;
     this.isAnswerShowing = true;
     let actualCorrectAnswer = this.srtDetails[this.contentItemInfo.language][this.currentSrtDetailIndex].line;
@@ -168,6 +177,7 @@ export class QuizModeComponent {
     });
   }
 
+  // Move UI to next question
   nextQuestion() {
     this.isAnswerShowing = false;
     this.userInputAnswer = "";
@@ -178,27 +188,31 @@ export class QuizModeComponent {
     this.canUpdateAnswer = true;
   }
 
+  // Helper method to check if answer is correct, ignoring capitalization and accents
   isCorrectlyAnswered(expectedAnswer: string, providedAnswer: string) : boolean {
     let expectedAnswerSimplified = expectedAnswer.toLocaleLowerCase('en-US')
       .replaceAll(/\s+/gi, " ")
-      .replaceAll(/[^A-Za-zŽžÀ-ÿ\s]/gi, ""); // TODO: confirm that this list of punctuation is complete.
+      .replaceAll(/[^A-Za-zŽžÀ-ÿ\s]/gi, "");
     let providedAnswerSimplified = providedAnswer.toLocaleLowerCase('en-US')
       .replaceAll(/\s+/gi, " ")
-      .replaceAll(/[^A-Za-zŽžÀ-ÿ\s]/gi, ""); // TODO: confirm that this list of punctuation is complete.
+      .replaceAll(/[^A-Za-zŽžÀ-ÿ\s]/gi, "");
     console.log(expectedAnswerSimplified);
     console.log(providedAnswerSimplified);
     return this.equalsIgnoreCaseAndAccents(expectedAnswerSimplified, providedAnswerSimplified);
   }
 
+  // Show table of results to user
   showResults() {
     this.isQuizComplete = true;
   }
 
+  // reload page to start quiz again
   restartQuiz() {
     this.router.navigateByUrl('/', {skipLocationChange:true}).then(()=>this.router.navigate([`/quiz/${this.contentItemInfo.id}`]));
   }
 
+  // Helper method to check if two strings are almost equal, ignoring case and accents.
   equalsIgnoreCaseAndAccents(string1: string, string2: string) : boolean {
-    return string1.localeCompare(string2, 'en', { sensitivity: 'base' }) === 0; // TODO: investigate locale options other than 'en'.
+    return string1.localeCompare(string2, 'en', { sensitivity: 'base' }) === 0;
   }
 }
