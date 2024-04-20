@@ -1,4 +1,5 @@
 const Content = require("../models/content.model.js");
+const User = require("../models/user.model.js");
 
 exports.createContent = (req, res) => {
     console.log('content.controller::createContent called');
@@ -281,5 +282,142 @@ exports.deleteContentById = (req, res) => {
                 error: db_error
             }
         )
+    );
+};
+
+exports.createDemoContentForUser = (req, res) => {
+    console.log('content.controller::createDemoContentForUser called');
+
+    if (req.body.userId === null) {
+        console.log(`userId failed validation. userId ${req.body.userId}`);
+        let returnObj = {
+            success: false,
+            id: null,
+            error: "userId cannot be empty"
+        };
+        res.send(returnObj);
+        return;
+    }
+
+    let fs = require('fs');
+
+    let demoContent1Buffer;
+    let demoContentSrt1Buffer;
+    let demoTranslationSrt1Buffer;
+
+    let demoContent2Buffer;
+    let demoContentSrt2Buffer;
+    let demoTranslationSrt2Buffer;
+
+    let demoContent3Buffer;
+    let demoContentSrt3Buffer;
+    let demoTranslationSrt3Buffer;
+    try {
+        demoContent1Buffer = fs.readFileSync('demo/demo_content_1.mp3');
+        demoContentSrt1Buffer = fs.readFileSync("demo/demo_srt_1.srt");
+        demoTranslationSrt1Buffer = fs.readFileSync("demo/demo_translation_srt_1.srt");
+        demoContent2Buffer = fs.readFileSync('demo/demo_content_2.mp3');
+        demoContentSrt2Buffer = fs.readFileSync("demo/demo_srt_2.srt");
+        demoTranslationSrt2Buffer = fs.readFileSync("demo/demo_translation_srt_2.srt");
+        demoContent3Buffer = fs.readFileSync('demo/demo_content_3.mp3');
+        demoContentSrt3Buffer = fs.readFileSync("demo/demo_srt_3.srt");
+        demoTranslationSrt3Buffer = fs.readFileSync("demo/demo_translation_srt_3.srt");
+    } catch (err) {
+        res.status(500).send(`Error occurred while copying demo data: ${err}`);
+    }
+
+    let parser = require('subtitles-parser');
+    let translationLangSrtData1 = parser.fromSrt(demoTranslationSrt1Buffer.toString());
+    let contentLangSrtData1 = parser.fromSrt(demoContentSrt1Buffer.toString());
+    let demoDataType1 = "video";
+    let demoDataContentLanguage1 = "Spanish";
+    let demoDataTranslationLanguage1 = "English";
+    let demoMediaTitle1 = "Buena Gente";
+    let demoMediaAuthor1 = "Spanish Playground";
+
+    let translationLangSrtData2 = parser.fromSrt(demoTranslationSrt2Buffer.toString());
+    let contentLangSrtData2 = parser.fromSrt(demoContentSrt2Buffer.toString());
+    let demoDataType2 = "movie clip";
+    let demoDataContentLanguage2 = "German";
+    let demoDataTranslationLanguage2 = "English";
+    let demoMediaTitle2 = "Henry Hühnchen";
+    let demoMediaAuthor2 = "The Fable Cottage";
+
+    let translationLangSrtData3 = parser.fromSrt(demoTranslationSrt3Buffer.toString());
+    let contentLangSrtData3 = parser.fromSrt(demoContentSrt3Buffer.toString());
+    let demoDataType3 = "song";
+    let demoDataContentLanguage3 = "French";
+    let demoDataTranslationLanguage3 = "English";
+    let demoMediaTitle3 = "Dernière Danse";
+    let demoMediaAuthor3 = "Indila";
+
+    Content.createContent(
+        req.body.userId,
+        demoDataType1,
+        demoDataContentLanguage1,
+        demoDataTranslationLanguage1,
+        demoContent1Buffer,
+        demoMediaTitle1,
+        demoMediaAuthor1,
+        translationLangSrtData1,
+        contentLangSrtData1,
+        (newContentId) => {
+            console.log("content.controller::createContent responding with http success");
+            Content.createContent(
+                req.body.userId,
+                demoDataType2,
+                demoDataContentLanguage2,
+                demoDataTranslationLanguage2,
+                demoContent2Buffer,
+                demoMediaTitle2,
+                demoMediaAuthor2,
+                translationLangSrtData2,
+                contentLangSrtData2,
+                (newContentId) => {
+                    Content.createContent(
+                        req.body.userId,
+                        demoDataType3,
+                        demoDataContentLanguage3,
+                        demoDataTranslationLanguage3,
+                        demoContent3Buffer,
+                        demoMediaTitle3,
+                        demoMediaAuthor3,
+                        translationLangSrtData3,
+                        contentLangSrtData3,
+                        (newContentId) => {
+                            res.send(
+                                {
+                                    success: true,
+                                    error: null
+                                });
+                        },
+                        (dbError) => {
+                            console.log("content.controller::createContent responding with http error");
+                            res.send(
+                                {
+                                    success: false,
+                                    error: dbError
+                                });
+                        }
+                    );
+                },
+                (dbError) => {
+                    console.log("content.controller::createContent responding with http error");
+                    res.send(
+                        {
+                            success: false,
+                            error: dbError
+                        });
+                }
+            );
+        },
+        (dbError) => {
+            console.log("content.controller::createContent responding with http error");
+            res.send(
+                {
+                    success: false,
+                    error: dbError
+                });
+        }
     );
 };

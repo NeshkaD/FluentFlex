@@ -22,7 +22,7 @@ export class UploadComponent {
   translationLanguage : any;
   contentTitle : any;
   contentAuthor : any;
-  currentUserId : any
+  currentUserId : any;
 
   constructor(private http: HttpClient, private router: Router, private apiService: ApiService) {}
 
