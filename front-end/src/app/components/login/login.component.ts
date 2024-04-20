@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 
+// Possible states for a pending login request
 enum LoginState {
   NotAttempted,
   LoggingIn,
@@ -11,6 +12,7 @@ enum LoginState {
   FailedServer
 }
 
+// Class to dynamically initialize and update the Login component
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -24,6 +26,7 @@ export class LoginComponent implements OnInit {
   username = '';
   password = '';
 
+  // Constructor injects apiService and router module. Initializes default state.
   constructor(
     private router: Router,
     private apiService: ApiService
@@ -31,8 +34,10 @@ export class LoginComponent implements OnInit {
     this.loginState = LoginState.NotAttempted;
   }
 
+  // Empty method required by Angular
   ngOnInit(): void { }
 
+  // Send HTTP login request to back-end
   login(): void {
     if (this.username == "" || this.password == "") {
       this.loginState = LoginState.FailedCredentials;

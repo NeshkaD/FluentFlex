@@ -18,11 +18,13 @@ export class SignUpComponent {
   email = '';
   errorMessageFromServer = '';
 
+  // Inject router and http request dependencies
   constructor(
     private router: Router,
     private apiService: ApiService
   ) { }
 
+  // Send HTTP request to create new user and redirect to login page
   signUp(): void {
     console.log(`SignUpComponent::signUp called. username=${this.username};password=${this.password};email=${this.email}`); // TODO: Delete this!
 

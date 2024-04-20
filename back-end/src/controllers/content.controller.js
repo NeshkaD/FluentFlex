@@ -1,14 +1,11 @@
 const Content = require("../models/content.model.js");
 const User = require("../models/user.model.js");
 
+// Handle request to upload new MP3 audio and SRT files to the database
 exports.createContent = (req, res) => {
     console.log('content.controller::createContent called');
 
-    console.log(req.body);
-    console.log(req.files);
-
-    console.log(req.get('Content-Type'));
-
+    // Validate that files were sent:
     if (req.files === null) {
         console.log(`Files failed validation. Files array is null.`);
         let returnObj = {
@@ -19,6 +16,7 @@ exports.createContent = (req, res) => {
         return;
     }
 
+    // Validate that MP3 file was sent:
     if (req.files.media === null) {
         console.log(`media failed validation. media is null.`);
         let returnObj = {
@@ -29,6 +27,7 @@ exports.createContent = (req, res) => {
         return;
     }
 
+    // Validate that translation SRT file was sent:
     if (req.files.userLangSrt === null) {
         console.log(`userLangSrt failed validation. userLangSrt is null.`);
         let returnObj = {
@@ -39,6 +38,7 @@ exports.createContent = (req, res) => {
         return;
     }
 
+    // Validate that SRT file in the same language as the MP3 audio was sent:
     if (req.files.foreignLangSrt === null) {
         console.log(`foreignLangSrt failed validation. foreignLangSrt is null.`);
         let returnObj = {
@@ -49,6 +49,7 @@ exports.createContent = (req, res) => {
         return;
     }
 
+    // Validate that userId was sent:
     if (req.body.userId === null) {
         console.log(`userId failed validation. userId ${req.body.userId}`);
         let returnObj = {
@@ -59,7 +60,8 @@ exports.createContent = (req, res) => {
         return;
     }
 
-    if (Number.isNaN(req.body.userId)) { // TODO: verify that it's a positive integer, not just that it's a number.
+    // Validate that userId is a valid number:
+    if (Number.isNaN(req.body.userId)) {
         console.log(`userId failed number validation. userId ${req.body.userId}`);
         let returnObj = {
             "success": false,
@@ -71,6 +73,7 @@ exports.createContent = (req, res) => {
 
     let userIdNum = Number.parseInt(req.body.userId);
 
+    // Validate that content type was specified in request:
     if (req.body.type === null) {
         console.log(`type failed validation. type ${req.body.type}`);
         let returnObj = {
@@ -81,6 +84,7 @@ exports.createContent = (req, res) => {
         return;
     }
 
+    // Validate that content language was specified in the request:
     if (req.body.contentLanguage === null) {
         console.log(`contentLanguage failed validation. contentLanguage ${req.body.contentLanguage}`);
         let returnObj = {
@@ -91,6 +95,7 @@ exports.createContent = (req, res) => {
         return;
     }
 
+    // Validate that translation language was specified in the request:
     if (req.body.translationLanguage === null) {
         console.log(`translationLanguage failed validation. translationLanguage ${req.body.translationLanguage}`);
         let returnObj = {
@@ -101,6 +106,7 @@ exports.createContent = (req, res) => {
         return;
     }
 
+    // Validate that MP3 content title was specified in the request:
     if (req.body.mediaTitle === null) {
         console.log(`mediaTitle failed validation. mediaTitle ${req.body.mediaTitle}`);
         let returnObj = {
@@ -111,6 +117,7 @@ exports.createContent = (req, res) => {
         return;
     }
 
+    // Validate that author was specified in the request:
     if (req.body.mediaAuthor === null) {
         console.log(`mediaAuthor failed validation. mediaAuthor ${req.body.mediaAuthor}`);
         let returnObj = {
@@ -121,17 +128,17 @@ exports.createContent = (req, res) => {
         return;
     }
 
+    // Convert SRT files from binary to Strings:
     let userLangSrt = req.files.userLangSrt[0].buffer.toString();
     let foreignLangSrt = req.files.foreignLangSrt[0].buffer.toString();
 
 
-    // SUBTITLES-PARSER: good, but timestamp is hard to work with
+    // Import substitles-parser and use it to convert SRT strings to objects:
     let parser = require('subtitles-parser');
     let userLangSrtData = parser.fromSrt(userLangSrt);
     let foreignLangSrtData = parser.fromSrt(foreignLangSrt);
 
-
-    // TODO: improve auth with tokens
+    // Call model method to save MP3 blob and SRT strings into the DB:
     Content.createContent(
         userIdNum,
         req.body.type,
@@ -144,6 +151,7 @@ exports.createContent = (req, res) => {
         foreignLangSrtData,
         (newContentId) => {
             console.log("content.controller::createContent responding with http success");
+            // Send HTTP response to client with success and the new content ID:
             res.send(
                 {
                     success: true,
@@ -153,6 +161,7 @@ exports.createContent = (req, res) => {
         },
         (dbError) => {
             console.log("content.controller::createContent responding with http error");
+            // Send HTTP response to client with error info:
             res.send(
                 {
                     success: false,
@@ -163,8 +172,11 @@ exports.createContent = (req, res) => {
     )
 };
 
+// Handle request to get binary blob of MP3 data by ID
 exports.getContentById = (req, res) => {
     console.log('content.controller::getContentById called');
+
+    // Call model method to retrieve the MP3 blob from the DB
     Content.findContentById(
         req.params.contentId,
         (content, err) => {
@@ -178,24 +190,30 @@ exports.getContentById = (req, res) => {
             // More info: https://stackoverflow.com/questions/65941347/how-can-i-add-the-accept-ranges-header-to-the-response-in-nodejs
             
             });
-            res.send(buffer);
+            res.send(buffer); // Send HTTP response to user with MP3 audio as stream of bytes
         }
     );
 };
 
+// Handle request to MP3 content metadata without actually getting the audio blob
 exports.getContentInfoById = (req, res) => {
     console.log('content.controller::getContentInfoById called');
+
+    // Call model method to retrieve the MP3 blob's metadata from the DB:
     Content.findContentInfoById(
         req.params.contentId,
         (result) => {
+        // Return 404 error if MP3 content not found:
         if (result.length < 1) {
-            res.sendStatus(404); // TODO: Rainyday test for this!
+            res.sendStatus(404);
         }
+
+        // Return 500 server error if too much info found - this should never happen if DB is correctly configured:
         if (result.length > 1) {
             console.log(`content.controller::get found multiple with `);
-            res.sendStatus(500); // TODO: This probably is not testable, as DB key unique
+            res.sendStatus(500);
         }
-        let returnObj = { // convert DB format to JS camelcase standard.
+        let returnObj = {
             "id": result.id,
             "userId": result.user_id,
             "type": result.type,
@@ -203,17 +221,19 @@ exports.getContentInfoById = (req, res) => {
             "mediaTitle": result.media_title,
             "mediaAuthor": result.media_author
         }
-        res.send(returnObj);
+        res.send(returnObj); // Send HTTP response to client with metadata about the requested MP3.
     },
     (error) => {
         console.log(error);
-        res.sendStatus(404); // TODO: This callback fixes bugging out when content id requested does not exist: TypeError: err_callback is not a function. BUT, we should probably send empty response, not a 404.
+        res.sendStatus(404);
     });
 };
 
-exports.getSrtDetailsByContentId = (req, res) => { // TODO: Maybe implement similar method that only returns srt_details in the content language. And a separate method for user's own language(s).
+// Handle request for all SRT information relating to an MP3 content item
+exports.getSrtDetailsByContentId = (req, res) => {
     console.log('content.controller::getSrtDetailsByContentId called');
     let returnObj = {};
+    // Call model method to get the SRT item IDs relating to the MP3 content ID:
     Content.findSrtItemIdsAndInfoByContentId(
         req.params.contentId,
         (srtItemIdsAndInfo, err) => {
@@ -226,23 +246,27 @@ exports.getSrtDetailsByContentId = (req, res) => { // TODO: Maybe implement simi
                     res.sendStatus(500);
                     return;   
                 }
+
+                // Call model method to get the SRT details (lines) relating to the first SRT item ID:
                 Content.findSrtDetailsBySrtItemId(
-                    srtItemIdsAndInfo[0].id, // TODO: errors out when srtItemIdsAndInfo is undefined. Possibly now fixed. Test.
+                    srtItemIdsAndInfo[0].id,
                     (srtDetails1, err) => {
                         console.log(srtDetails1);
                         if (err) {
                             res.sendStatus(500);
                         }
                         returnObj[srtItemIdsAndInfo[0].language] = srtDetails1;
+
+                        // Call model method to get the SRT details (lines) relating to the first SRT item ID:
                         Content.findSrtDetailsBySrtItemId(
-                            srtItemIdsAndInfo[1].id, // TODO: Change this to for loop implementation to handle higher number of srt items if needed.
+                            srtItemIdsAndInfo[1].id,
                             (srtDetails2, err) => {
                                 console.log(srtDetails2);
                                 if (err) {
                                     res.sendStatus(500);
                                 }
                                 returnObj[srtItemIdsAndInfo[1].language] = srtDetails2;
-                                res.send(returnObj);
+                                res.send(returnObj); // Send HTTP response to client with all the SRT lines for study/quiz modes.
                             }
                         );
                     }
@@ -252,30 +276,39 @@ exports.getSrtDetailsByContentId = (req, res) => { // TODO: Maybe implement simi
     );
 };
 
+// Handle request to update user score on an SRT line based on correct or incorrect answer
 exports.patchSrtDetailBasedOnAnswer = (req, res) =>  {
     console.log('content.controller::patchSrtDetailBasedOnAnswer called');
+
+    // Call model method to update scores in DB:
     Content.patchSrtDetailBasedOnAnswer(
         req.body.srtDetailId,
         req.body.isCorrectAnswer,
         (result, err) => {
+            // If an error occurred, send 500 HTTP response to client:
             if (err) {
                 res.sendStatus(500);
             }
-            res.send({success: true, error: null});
+            res.send({success: true, error: null}); // Send success HTTP response to client
         }
     );
 };
 
+// Handle request to delete MP3 file and SRT file data from the database based on a given MP3 content ID
 exports.deleteContentById = (req, res) => {
     console.log('content.controller::deleteContentById called');
     let contentId = req.params.contentId;
+
+    // Call model method to delete MP3 and SRT file data:
     Content.delete(contentId,
+        // Send success HTTP resposne to client:
         (result) => res.send(
             {
                 success: true,
                 error: null
             }
         ),
+        // Send success HTTP resposne to client with error info:
         (db_error) => res.send(
             {
                 success: false,
@@ -285,9 +318,11 @@ exports.deleteContentById = (req, res) => {
     );
 };
 
+// Handle request to add demo data to a user's account
 exports.createDemoContentForUser = (req, res) => {
     console.log('content.controller::createDemoContentForUser called');
 
+    // Validate user ID:
     if (req.body.userId === null) {
         console.log(`userId failed validation. userId ${req.body.userId}`);
         let returnObj = {
@@ -299,8 +334,10 @@ exports.createDemoContentForUser = (req, res) => {
         return;
     }
 
+    // Import Node fs library for interacting with the filesystem on the server:
     let fs = require('fs');
 
+    // Read the SRT and MP3 demo files from the server filesystem as binary buffers:
     let demoContent1Buffer;
     let demoContentSrt1Buffer;
     let demoTranslationSrt1Buffer;
@@ -326,6 +363,7 @@ exports.createDemoContentForUser = (req, res) => {
         res.status(500).send(`Error occurred while copying demo data: ${err}`);
     }
 
+    // Parse the SRT binary data to obtain SRT strings for each demo file set:
     let parser = require('subtitles-parser');
     let translationLangSrtData1 = parser.fromSrt(demoTranslationSrt1Buffer.toString());
     let contentLangSrtData1 = parser.fromSrt(demoContentSrt1Buffer.toString());
@@ -351,6 +389,7 @@ exports.createDemoContentForUser = (req, res) => {
     let demoMediaTitle3 = "Dernière Danse";
     let demoMediaAuthor3 = "Indila";
 
+    // Call model method to create demo data in DB for demo file set 1:
     Content.createContent(
         req.body.userId,
         demoDataType1,
@@ -362,7 +401,7 @@ exports.createDemoContentForUser = (req, res) => {
         translationLangSrtData1,
         contentLangSrtData1,
         (newContentId) => {
-            console.log("content.controller::createContent responding with http success");
+            // Call model method to create demo data in DB for demo file set 2:
             Content.createContent(
                 req.body.userId,
                 demoDataType2,
@@ -374,6 +413,7 @@ exports.createDemoContentForUser = (req, res) => {
                 translationLangSrtData2,
                 contentLangSrtData2,
                 (newContentId) => {
+                    // Call model method to create demo data in DB for demo file set 3:
                     Content.createContent(
                         req.body.userId,
                         demoDataType3,
@@ -385,6 +425,7 @@ exports.createDemoContentForUser = (req, res) => {
                         translationLangSrtData3,
                         contentLangSrtData3,
                         (newContentId) => {
+                            // Send success HTTP response to client:
                             res.send(
                                 {
                                     success: true,
@@ -393,6 +434,7 @@ exports.createDemoContentForUser = (req, res) => {
                         },
                         (dbError) => {
                             console.log("content.controller::createContent responding with http error");
+                            // Send error HTTP response to client with error info:
                             res.send(
                                 {
                                     success: false,
@@ -403,6 +445,7 @@ exports.createDemoContentForUser = (req, res) => {
                 },
                 (dbError) => {
                     console.log("content.controller::createContent responding with http error");
+                    // Send HTTP response to client with database error info:
                     res.send(
                         {
                             success: false,
@@ -413,6 +456,7 @@ exports.createDemoContentForUser = (req, res) => {
         },
         (dbError) => {
             console.log("content.controller::createContent responding with http error");
+            // Send HTTP response to client with database error info:
             res.send(
                 {
                     success: false,

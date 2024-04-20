@@ -5,6 +5,7 @@ import { ApiService } from '../../services/api.service';
 import { RouterModule } from '@angular/router';
 import { Router } from '@angular/router';
 
+// Class to dynamically initialize and update the dashboard component
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -19,6 +20,7 @@ export class DashboardComponent implements OnInit {
   userId: any;
   contentItemInfoList: any;
 
+  // Constructor injects apiService, bootstrap modal module, and router module and initializes default data
   constructor(private apiService : ApiService, private ngbModal: NgbModal, private router: Router
     ) {
       this.userId = apiService.getCurrentUser();
@@ -34,10 +36,13 @@ export class DashboardComponent implements OnInit {
       ]
     }
 
+  // Initialize the dashboard component
   ngOnInit(): void {
+    // Redirect to login page if user not logged in:
     if (!this.apiService.getCurrentUser()) {
       this.router.navigate(['/login']);
     }
+    // Make HTTP request to populate dashboard table with list of MP3 content items that this user owns:
     this.apiService.getContentItemInfoListByUserId(this.userId).subscribe(
       {
         next: value => {
@@ -52,6 +57,7 @@ export class DashboardComponent implements OnInit {
     );
   }
 
+  // Opens content deletion modal:
   openModal(template: any) {
     this.activeModal = this.ngbModal.open(template, {ariaLabelledBy: 'modal-basic-title'});
     this.activeModal.result.then((result: any) => {
@@ -61,16 +67,20 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  // Log when study button is clicked:
   onClickStudyButton(event: any, content: any): void {
-
+    console.log("Study button was clicked");
   }
 
+  // Open content deletion modal to check if user really wants to delete their MP3 item:
   onClickDeleteButton(event: any, deck: any, popover: any): void {
     this.currentChosenContentToDelete = deck;
     this.openModal(popover);
   }
 
+  // Send request to back-end API to delete MP3 content and request updated list from back-end to dynamically update dashboard:
   onClickConfirmDeleteButton(event: any): void {
+    // HTTP deletion request:
     this.apiService.deleteContent(this.currentChosenContentToDelete.id).subscribe(
       {
         next: value => {},
@@ -79,7 +89,7 @@ export class DashboardComponent implements OnInit {
         },
         complete: () => {
           console.log(`Observable for deleting contentId ${this.currentChosenContentToDelete.id} emitted the complete notification`);
-          // Requested most up-to-date copy of contentInfoList from backend.
+          // HTTP Request to get the most up-to-date copy of contentInfoList from backend:
           this.apiService.getContentItemInfoListByUserId(this.userId).subscribe(
             {
               next: value => {
@@ -100,7 +110,9 @@ export class DashboardComponent implements OnInit {
     );
   }
 
+  // Send request to back-end API to insert MP3 demo data for this user and HTTP request updated list to dynamically update dashboard:
   onClickDemoDataButton(event: any) : void {
+    // HTTP demo data request:
     this.apiService.acquireDemoData(this.userId).subscribe(
       {
         next: value => {},
@@ -109,7 +121,7 @@ export class DashboardComponent implements OnInit {
         },
         complete: () => {
           console.log('Observable for acquiring demo data emitted the complete notification');
-          // Requested most up-to-date copy of contentInfoList from backend.
+          // HTTP Request to get the most up-to-date copy of contentInfoList from backend:
           this.apiService.getContentItemInfoListByUserId(this.userId).subscribe(
             {
               next: value => {
@@ -129,9 +141,13 @@ export class DashboardComponent implements OnInit {
     );
   }
 
+  // Log when quiz button is clicked:
   onClickQuizButton(event: any, deck: any): void {
+    console.log("Quiz button was clicked");
   }
 
+  // Log when upload button is clicked:
   onClickUploadButton(event: any): void {
+    console.log("Upload button was clicked");
   }
 }

@@ -8,6 +8,7 @@ import { ProfileComponent } from './components/profile/profile.component';
 import { UploadComponent } from './components/upload/upload.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
 
+// Define front-end routes and assocaiated front-end components:
 export const routes: Routes = [
     { path: '', component: LoginComponent},
     { path: 'study/:id', component: StudyModeComponent },
