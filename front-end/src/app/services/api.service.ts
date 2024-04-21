@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
-let baseUrl = 'http://52.10.200.142:8080' // IP address and port or domain name of back-end API.
+let baseUrl = 'http://localhost:8080' // IP address and port or domain name of back-end API.
 
 // Service class to provide util methods for making HTTP requests to the back-end REST API.
 @Injectable({
